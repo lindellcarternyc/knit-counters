@@ -1,35 +1,100 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+const KEY = "KNIT_COUNTERS";
 
+const getStoredCounters = (): number[] => {
+  try {
+    const storedCounters = localStorage.getItem(KEY);
+    if (storedCounters) {
+      const nums = JSON.parse(storedCounters);
+      if (Array.isArray(nums) && nums.every((n) => !isNaN(parseInt(n)))) {
+        return nums;
+      }
+    }
+    return [];
+  } catch {
+    throw new Error("Couldn't get counters!");
+  }
+};
+
+const setStoredCounters = (nums: number[]): void => {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(nums));
+  } catch {
+    throw new Error("Couldn't set counters!");
+  }
+};
+
+export default function App() {
+  const [counters, setCounters] = useState<number[]>(getStoredCounters());
+
+  useEffect(() => {
+    setStoredCounters(counters);
+  }, [counters]);
+
+  const addCounter = () => {
+    setCounters((prevCounters) => [...prevCounters, 1]);
+  };
   return (
-    <>
+    <div>
+      Counters
+      <button type="button" onClick={addCounter}>
+        Add Counter
+      </button>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {counters.map((value, index) => (
+          <Counter
+            key={index}
+            value={value}
+            onChange={(newValue) => {
+              const newCounters = [...counters];
+              newCounters[index] = newValue;
+              setCounters(newCounters);
+            }}
+          />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+interface CounterProps {
+  value: number;
+  onChange: (value: number) => void;
+}
+
+function Counter({ value, onChange }: CounterProps) {
+  return (
+    <div
+      style={{
+        marginBottom: "10px",
+        border: "1px solid",
+        borderRadius: "5px",
+        padding: "5px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px",
+          border: "1px solid black",
+          borderRadius: "5px",
+          marginBottom: "10px",
+        }}
+      >
+        <button type="button" onClick={() => onChange(value - 1)}>
+          -
+        </button>
+        <p>{value}</p>
+        <button type="button" onClick={() => onChange(value + 1)}>
+          +
+        </button>
+      </div>
+      <button type="button" onClick={() => onChange(1)}>
+        Reset
+      </button>
+    </div>
+  );
+}
