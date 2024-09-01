@@ -35,6 +35,14 @@ export default function App() {
   const addCounter = () => {
     setCounters((prevCounters) => [...prevCounters, 1]);
   };
+
+  const deleteCounter = (idx: number) => {
+    setCounters((prevCounters) => [
+      ...prevCounters.slice(0, idx),
+      ...prevCounters.slice(idx + 1),
+    ]);
+  };
+
   return (
     <div>
       Counters
@@ -51,6 +59,7 @@ export default function App() {
               newCounters[index] = newValue;
               setCounters(newCounters);
             }}
+            onDelete={() => deleteCounter(index)}
           />
         ))}
       </div>
@@ -61,9 +70,10 @@ export default function App() {
 interface CounterProps {
   value: number;
   onChange: (value: number) => void;
+  onDelete: () => void;
 }
 
-function Counter({ value, onChange }: CounterProps) {
+function Counter({ value, onChange, onDelete }: CounterProps) {
   return (
     <div
       style={{
@@ -92,9 +102,20 @@ function Counter({ value, onChange }: CounterProps) {
           +
         </button>
       </div>
-      <button type="button" onClick={() => onChange(1)}>
-        Reset
-      </button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        {" "}
+        <button type="button" onClick={() => onChange(1)}>
+          Reset
+        </button>
+        <button type="button" onClick={onDelete}>
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
